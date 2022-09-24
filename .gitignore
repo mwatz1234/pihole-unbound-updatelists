@@ -1,0 +1,4 @@
+build*.conf
+manifest-*.json
+Dockerfile_*
+.idea/
