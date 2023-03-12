@@ -45,3 +45,6 @@ services:
   * Pihole base image is the official [pihole/pihole:latest](https://hub.docker.com/r/pihole/pihole/tags?page=1&name=latest)
   * unbound method was based from https://github.com/chriscrowe/docker-pihole-unbound
   * pihole-update lists is from https://github.com/jacklul/pihole-updatelists
+* If you like my work, [a donation to my hot tamales fund](https://paypal.me/mwatz1234) is very much appreciated.
+  
+[![Donate](https://github.com/mwatz1234/pihole-dot-doh-updatelists/blob/master/donate-button-small.png)](https://paypal.me/mwatz1234)
