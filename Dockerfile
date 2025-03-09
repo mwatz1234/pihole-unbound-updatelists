@@ -6,13 +6,13 @@ ARG FRM
 ARG TAG
 ARG TARGETPLATFORM
 
-RUN apt-get update && \
-    apt-get install -Vy sudo bash wget nano php-cli php-sqlite3 php-intl php-curl curl unbound && \
+#RUN apt-get update && \
+#    apt-get install -Vy sudo bash wget nano php-cli php-sqlite3 php-intl php-curl curl unbound && \
+#    rm -fr /var/cache/apt/* /var/lib/apt/lists/*.lz4
+
+RUN apk upgrade --no-cache && \
+    apk add --no-cache sudo bash wget nano php-cli php-sqlite3 php-intl php-curl curl unbound
     rm -fr /var/cache/apt/* /var/lib/apt/lists/*.lz4
-
-#RUN apk upgrade --no-cache && \
-#    apk add --no-cache sudo bash wget nano php-cli php-sqlite3 php-intl php-curl curl unbound
-
 
 
 RUN mkdir -p /etc/services.d/unbound
