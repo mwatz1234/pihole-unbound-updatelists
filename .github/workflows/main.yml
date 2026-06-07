@@ -5,7 +5,7 @@ on:
     branches:
       - 'master'
   schedule:
-      - cron:  '0 * * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -15,8 +15,9 @@ jobs:
       image-needs-updating: ${{ steps.check.outputs.needs-updating }}
     steps:
       - name: Docker Image Update Checker
+        continue-on-error: true
         id: check
-        uses: lucacome/docker-image-update-checker@v1
+        uses: lucacome/docker-image-update-checker@v2
         with:
           base-image: pihole/pihole:latest
           image: mwatz/pihole-unbound-updatelists:latest
@@ -28,31 +29,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      
-      - uses: pozetroninc/github-action-get-latest-release@v0.6.0
+        uses: docker/setup-buildx-action@v4
+
+      - uses: pozetroninc/github-action-get-latest-release@v0.8.0
         id: latest-tag
         with:
           repository: pi-hole/docker-pi-hole
-          
+
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v6,linux/arm/v7,linux/386
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/386
           push: true
           tags: |
             mwatz/pihole-unbound-updatelists:latest
             mwatz/pihole-unbound-updatelists:${{ steps.latest-tag.outputs.release }}
+
+      - name: Update Docker Hub README
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: mwatz/pihole-unbound-updatelists
+          readme-filepath: ./README.md

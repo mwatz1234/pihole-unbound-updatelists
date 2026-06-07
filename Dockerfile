@@ -1,30 +1,54 @@
+#---------------------------------------
+# Base image
+#---------------------------------------
 ARG FRM='pihole/pihole:latest'
 ARG TAG='latest'
-
+ARG TARGETPLATFORM
 FROM ${FRM}
+
+# Re-declare ARGs for use in RUN commands (BuildKit requirement)
 ARG FRM
 ARG TAG
 ARG TARGETPLATFORM
 
-#RUN apt-get update && \
-#    apt-get install -Vy sudo bash wget nano php-cli php-sqlite3 php-intl php-curl curl unbound && \
-#    rm -fr /var/cache/apt/* /var/lib/apt/lists/*.lz4
+USER root
 
-RUN apk upgrade --no-cache && \
-    apk add --no-cache sudo bash wget nano php-cli php-sqlite3 php-intl php-curl curl unbound
+#---------------------------------------
+# Install dependencies
+# Pi-hole v6 is Alpine-based — use apk, not apt-get
+#---------------------------------------
+RUN apk add --no-cache \
+        bash \
+        curl \
+        wget \
+        git \
+        sudo \
+        nano \
+        php \
+        php-curl \
+        php-intl \
+        php-openssl \
+        php-pcntl \
+        php-posix \
+        php-pdo_sqlite \
+        unbound \
+        unbound-libs
 
-RUN mkdir -p /etc/services.d/unbound
+#---------------------------------------
+# Install unbound service + pihole-updatelists
+#---------------------------------------
+COPY stuff /temp
+RUN chmod +x /temp/install.sh \
+    && /bin/bash /temp/install.sh \
+    && wget -O - https://raw.githubusercontent.com/jacklul/pihole-updatelists/master/install.sh | bash -s docker \
+    && rm -rf /temp
 
-COPY /stuff/lighttpd-external.conf /etc/lighttpd/external.conf 
-COPY /stuff/unbound-pihole.conf /etc/unbound/unbound.conf.d/pi-hole.conf
-COPY /stuff/99-edns.conf /etc/dnsmasq.d/99-edns.conf
-COPY /stuff/unbound-run /etc/services.d/unbound/run
-# Make bash script executable
-RUN chmod -v +x /etc/services.d/unbound/run
-
-#ENTRYPOINT ./s6-init
-
-RUN wget -O - https://raw.githubusercontent.com/jacklul/pihole-updatelists/master/install.sh | bash /dev/stdin docker
-
+#---------------------------------------
+# Record build date
+#---------------------------------------
 RUN echo "$(date "+%d.%m.%Y %T") Built from ${FRM} with tag ${TAG}" >> /build_date.info
+
+#---------------------------------------
+# Inherit Pi-hole's default entrypoint from base image
+#---------------------------------------
 

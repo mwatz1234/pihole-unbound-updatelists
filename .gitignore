@@ -1,4 +1,14 @@
-build*.conf
-manifest-*.json
-Dockerfile_*
-.idea/
+# ============================================================
+# Testing directory — local only, never committed
+# ============================================================
+testing/
+
+# ============================================================
+# General
+# ============================================================
+.DS_Store
+*.log
+*.bak
+
+# Local dev guide — not for the public repo
+GIT-SETUP.md

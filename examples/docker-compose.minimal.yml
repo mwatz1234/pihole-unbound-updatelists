@@ -1,0 +1,29 @@
+# Pi-hole + Unbound + pihole-updatelists
+# CONFIG APPROACH: Minimal working example
+#
+# Minimum required settings to get up and running.
+# Replace <your-password-here> and the IP before starting.
+
+services:
+  pihole:
+    container_name: pihole
+    image: mwatz/pihole-unbound-updatelists:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      - TZ=America/Los_Angeles
+      - FTLCONF_webserver_api_password=<your-password-here>
+      - FTLCONF_dns_upstreams=127.0.0.1#5335  # Local unbound recursive resolver
+      - FTLCONF_dns_listeningMode=all
+      - FTLCONF_dns_dnssec=false              # Unbound validates DNSSEC -- disable Pi-hole's to avoid conflicts
+      - FTLCONF_LOCAL_IPV4=192.168.1.10       # Your Pi-hole server's LAN IP
+      - BLOCKLISTS_URL=https://v.firebog.net/hosts/lists.php?type=tick
+    volumes:
+      - './etc-pihole:/etc/pihole'
+    cap_add:
+      - NET_ADMIN
+      - NET_BIND_SERVICE
+    restart: unless-stopped
